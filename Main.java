@@ -4,127 +4,109 @@ import java.util.Scanner;
 
 class Main {
   
+    // for colored text
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_BLACK = "\u001B[30m";
+    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_GREEN = "\u001B[32m";
+    public static final String ANSI_YELLOW = "\u001B[33m";
+    public static final String ANSI_BLUE = "\u001B[34m";
+    public static final String ANSI_PURPLE = "\u001B[35m";
+    public static final String ANSI_CYAN = "\u001B[36m";
+    public static final String ANSI_WHITE = "\u001B[37m";
+    
+  public static void welcome(){
+    System.out.println(ANSI_YELLOW  + "************************************************************");
+    System.out.println("Enter expression for calculation");
+    System.out.println("in format: operandA OPERATION operandB and press Enter");
+    System.out.println("Where operandA and operandB is digit (arabic from 0 to 10, roman from I to X)");
+    System.out.println("OPERATION one from is: + - / * ");
+    System.out.println("Enter expression for calculate (CTRL-C to exit)");
+    System.out.println("************************************************************" + ANSI_RESET);      
+  }
+    
   public static void main(String[] args){
     String sResult = ""; 
     String sRomanDigit = "";
     int iRomanDigit = 0;
-    System.out.println("************************************************************");
-    System.out.println("Enter expression for calculation");
-    System.out.println("in format: operandA OPERATION operandB and press Enter");
-    System.out.println("Where operandA and operandB is digit (arabic 0-9, roman I-X)");
-    System.out.println("OPERATION one from is: + - / * ");
-    System.out.println("Enter expression for calculate (CTRL-C to exit)");
-    System.out.println("************************************************************");
+    
+    welcome();
 
     Scanner myObj = new Scanner(System.in);
     while (sResult != "x") {
       sResult = myObj.nextLine(); // for i,v, c, x to uppercase
       sResult = sResult.toUpperCase();
-      sResult = cleanString(sResult);  // drop invalid chars from input line
-      if ( validateInput(sResult) ){
-        System.out.println("Expression is valid");
+      // @todo "save" mode for drop unnesessary chars from input string (future dev)
+      // "save" mode (default) - drop invalid chars from input string
+      // "strict" mode - generate excepion in strint consist invalid chars (not matched regular expression) 
+      sResult = cleanString(sResult, "save");  // drop invalid chars from input line
+      if (validateInput(sResult) == 1){
+        System.out.println(ANSI_BLUE + "Arabic expression is valid" + ANSI_RESET);
+      } else if (validateInput(sResult) == 2) {
+          System.out.println(ANSI_BLUE + "ROMA expression is valid" + ANSI_RESET);
+          // iRomanDigit = romanToDecimal(sResult);
+          // System.out.println("From Roma " + sResult + " to Arabic " + Integer.toString(iRomanDigit) + " digit ");
       } else {
-        iRomanDigit = romanToDecimal(sResult);
-        System.out.println("From Roma " + sResult + " to Arabic " + Integer.toString(iRomanDigit) + " digit ");
-        System.out.println("Expression INVALID!");
+          System.out.println(ANSI_RED + "Error input data!" + ANSI_RESET);
       }
-      System.out.println("Your entered: " + sResult);
+      welcome();
+      // System.out.println("Your entered: " + sResult);
     }
     System.out.println("Buy!");
   }
  
 
-  private static boolean validateInput(String sInputExpression){
-    boolean bResult = false;
+  /* Check user input string with REGEXP
+  * Returns: 
+  * 1 if arabic digit is valid
+  * 2 if roma digit is valid
+  * Error codes for exceptions:
+  * 0 - unknow error (if error not detect)
+  */
+  private static int validateInput(String sInputExpression){
+    int iResult = 0;
+    
     // check sInput as arabic digit
-    // Pattern pattern = Pattern.compile("^[0-9][\\+\\-\\*\\/][0-9]$", Pattern.CASE_INSENSITIVE);
     Pattern pattern = Pattern.compile("^([0-9]|10)[\\+\\-\\*\\/]([0-9]|10)$", Pattern.CASE_INSENSITIVE);
     Matcher matcher = pattern.matcher(sInputExpression);
     boolean matchFound = matcher.find();
     if(matchFound) {
-      bResult = true;
+        // arabic digit is valid
+      iResult = 1;
     } else {
-      bResult = false;
+        // check ROMA digit
+        // for any ROMA digit we cal use without LCDM
+        // ^/^(X{0,3}I{0,3}|X{0,2}VI{0,3}|X{0,2}|I?[IVX])$/gm$
+        // RegExp from https://stackoverflow.com/questions/9340823/how-to-create-regular-expression-checking-roman-numerals
+        // RexExp checked on https://regex101.com/
+        // regular expression
+        pattern = Pattern.compile("^(X{0,3}I{0,3}|X{0,2}VI{0,3}|X{0,2}|I?[IVX])[\\+\\-\\*\\/](X{0,3}I{0,3}|X{0,2}VI{0,3}|X{0,2}|I?[IVX])$", Pattern.CASE_INSENSITIVE);
+        matcher = pattern.matcher(sInputExpression);
+        matchFound = matcher.find();        
+        if (matchFound){
+            iResult = 2;
+        } else {
+            // @todo - check problem and return detail result for get message in exception
+            // ignore pronlem and to reinput valid data now
+            System.out.println(ANSI_RED + "EXPRESSIN  not valid!" + ANSI_RESET);
+        }
     }
-    return bResult;
-
+    return iResult;
   }
 
-  private static boolean is_arabic(char ch){
-    boolean bResult = false;
-    switch (ch){
-      case '0':
-        bResult = true;
-        break;
-      case '1':
-        bResult = true;
-        break;
-      case '2':
-        bResult = true;
-        break;
-      case '3':
-        bResult = true;
-        break;
-      case '4':
-        bResult = true;
-        break;
-      case '5':
-        bResult = true;
-        break;
-      case '6':
-        bResult = true;
-        break;
-      case '7':
-        bResult = true;
-        break;
-      case '8':
-        bResult = true;
-        break;
-      case '9':
-        bResult = true;
-        break;
-      default:
-        bResult = false;
-    }
-    return bResult;
-
-  }
   public static String calc(String sInputExpression) {
     String sResult = sInputExpression;
     return sResult;
   }
 
-
   // extract invalid char from source string
   // and return desctination without baned char
-  
+  // defence from stupid user
   public static boolean canInsert(char myChar){
     boolean iResult = false;
     char[] enabledChars = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '-', '/', '*', 'I', 'V', 'X'};
-  /*
-    char[] enabledChars = new char[19];
-    enabledChars[0] = '0';
-    enabledChars[1] = '1';
-    enabledChars[2] = '2';
-    enabledChars[3] = '3';
-    enabledChars[4] = '4';
-    enabledChars[5] = '5';
-    enabledChars[6] = '6';
-    enabledChars[7] = '7';
-    enabledChars[8] = '8';
-    enabledChars[9] = '9';
-    enabledChars[10] = '+';
-    enabledChars[11] = '-';
-    enabledChars[12] = '/';
-    enabledChars[13] = '*';
-    enabledChars[14] = 'I';
-    enabledChars[15] = 'V';
-    enabledChars[16] = 'X';
-    enabledChars[17] = 'M';
-    enabledChars[18] = 'C';
-    */
     for (char item: enabledChars){
-      System.out.println("Item " + item + " Char: " + myChar);
+      // System.out.println("Item " + item + " Char: " + myChar);
       if (myChar == item){
         iResult = true;
         break;
@@ -133,10 +115,20 @@ class Main {
     return iResult;
   }
 
-  public static String cleanString(String sSource){
+  public static String cleanString(String sSource, String sMode){
     String sDestination = "";
     for (int i=0; i<sSource.length(); i++){
-      System.out.print(sSource.charAt(i));
+      // debug out
+      // @todo - remove it
+      if (i == sSource.length()-1){
+          // last char
+          System.out.println(sSource.charAt(i));
+      } else {
+          System.out.print(sSource.charAt(i));
+      }  
+      // debug out
+      
+      
       if (canInsert(sSource.charAt(i))){
         sDestination = sDestination + sSource.charAt(i); 
       }
@@ -153,17 +145,15 @@ class Main {
             return 5;
         if (r == 'X')
             return 10;
-        if (r == 'L')
-            return 50;
-        if (r == 'C')
-            return 100;
-        if (r == 'D')
-            return 500;
-        if (r == 'M')
-            return 1000;
         return -1;
     }
  
+    // after get caculation - convert result for roman output
+    public static String decimalToRoman(){
+        String sResult = "";
+        return sResult;
+    }
+    
     // Finds decimal value of a
     // given romal numeral
     public static int romanToDecimal(String str)
