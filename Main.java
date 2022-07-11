@@ -38,7 +38,6 @@ class Main {
     public static void main(String[] args) {
         String sResult = "+";
         String sRomanDigit = "";
-        int iRomanDigit = 0;
 
         welcome();
 
@@ -76,8 +75,6 @@ class Main {
             } else if (validateInput(sResult) == 2) {
                 // System.out.println(ANSI_BLUE + "ROMA expression is valid" + ANSI_RESET);
                 calc(sResult, 'r');
-                // iRomanDigit = romanToDecimal(sResult);
-                // System.out.println("From Roma " + sResult + " to Arabic " + Integer.toString(iRomanDigit) + " digit ");
             } else {
                 System.out.println(ANSI_RED + "Error input data!" + ANSI_RESET);
             }
@@ -124,8 +121,6 @@ class Main {
                     // System.out.println(ANSI_RED + "EXPRESSIN  not valid!" + ANSI_RESET);
                     // check use arabic-rome and rome-arabic chars
                     // A-R
-                    // pattern = Pattern.compile("^([0-9]|10)[\\+\\-\\*\\/]([0-9]|10)$", Pattern.CASE_INSENSITIVE);
-                    // pattern = Pattern.compile("^(X{0,3}I{0,3}|X{0,2}VI{0,3}|X{0,2}|I?[IVX])[\\+\\-\\*\\/](X{0,3}I{0,3}|X{0,2}VI{0,3}|X{0,2}|I?[IVX])$", Pattern.CASE_INSENSITIVE);
                     pattern = Pattern.compile("^([0-9]|10)[\\+\\-\\*\\/](X{0,3}I{0,3}|X{0,2}VI{0,3}|X{0,2}|I?[IVX])$", Pattern.CASE_INSENSITIVE);
                     matcher = pattern.matcher(sInputExpression);
                     matchFound = matcher.find();
@@ -313,7 +308,6 @@ class Main {
             // Getting value of symbol s[i+1]
             if (i + 1 < str.length()) {
                 int s2 = value(str.charAt(i + 1));
-
                 // Comparing both values
                 if (s1 >= s2) {
                     // Value of current symbol
@@ -330,7 +324,6 @@ class Main {
                 res = res + s1;
             }
         }
-
         return res;
     }
 
