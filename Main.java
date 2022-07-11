@@ -102,28 +102,52 @@ class Main {
         Pattern pattern = Pattern.compile("^([0-9]|10)[\\+\\-\\*\\/]([0-9]|10)$", Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(sInputExpression);
         boolean matchFound = matcher.find();
-        if (matchFound) {
-            // arabic digit is valid
-            iResult = 1;
-        } else {
-            // check ROMA digit
-            // for any ROMA digit we cal use without LCDM
-            // ^/^(X{0,3}I{0,3}|X{0,2}VI{0,3}|X{0,2}|I?[IVX])$/gm$
-            // RegExp from https://stackoverflow.com/questions/9340823/how-to-create-regular-expression-checking-roman-numerals
-            // RexExp checked on https://regex101.com/
-            // regular expression
-            pattern = Pattern.compile("^(X{0,3}I{0,3}|X{0,2}VI{0,3}|X{0,2}|I?[IVX])[\\+\\-\\*\\/](X{0,3}I{0,3}|X{0,2}VI{0,3}|X{0,2}|I?[IVX])$", Pattern.CASE_INSENSITIVE);
-            matcher = pattern.matcher(sInputExpression);
-            matchFound = matcher.find();
+        try {
             if (matchFound) {
-                iResult = 2;
+                // arabic digit is valid
+                iResult = 1;
             } else {
-                // @todo - check problem and return detail result for get message in exception
-                // ignore pronlem and to reinput valid data now
-                // System.out.println(ANSI_RED + "EXPRESSIN  not valid!" + ANSI_RESET);
-                iResult = 3;
-            }
+                // check ROMA digit
+                // for any ROMA digit we cal use without LCDM
+                // ^/^(X{0,3}I{0,3}|X{0,2}VI{0,3}|X{0,2}|I?[IVX])$/gm$
+                // RegExp from https://stackoverflow.com/questions/9340823/how-to-create-regular-expression-checking-roman-numerals
+                // RexExp checked on https://regex101.com/
+                // regular expression
+                pattern = Pattern.compile("^(X{0,3}I{0,3}|X{0,2}VI{0,3}|X{0,2}|I?[IVX])[\\+\\-\\*\\/](X{0,3}I{0,3}|X{0,2}VI{0,3}|X{0,2}|I?[IVX])$", Pattern.CASE_INSENSITIVE);
+                matcher = pattern.matcher(sInputExpression);
+                matchFound = matcher.find();
+                if (matchFound) {
+                    iResult = 2;
+                } else {
+                    iResult = 3;
+                    // ignore pronlem and to reinput valid data now
+                    // System.out.println(ANSI_RED + "EXPRESSIN  not valid!" + ANSI_RESET);
+                    // check use arabic-rome and rome-arabic chars
+                    // A-R
+                    // pattern = Pattern.compile("^([0-9]|10)[\\+\\-\\*\\/]([0-9]|10)$", Pattern.CASE_INSENSITIVE);
+                    // pattern = Pattern.compile("^(X{0,3}I{0,3}|X{0,2}VI{0,3}|X{0,2}|I?[IVX])[\\+\\-\\*\\/](X{0,3}I{0,3}|X{0,2}VI{0,3}|X{0,2}|I?[IVX])$", Pattern.CASE_INSENSITIVE);
+                    pattern = Pattern.compile("^([0-9]|10)[\\+\\-\\*\\/](X{0,3}I{0,3}|X{0,2}VI{0,3}|X{0,2}|I?[IVX])$", Pattern.CASE_INSENSITIVE);
+                    matcher = pattern.matcher(sInputExpression);
+                    matchFound = matcher.find();
+                    if (matchFound){
+                        // arabic - roma digit
+                        throw new Exception(ANSI_RED + "Your can only ARABIC-ROME digits in expression!" + ANSI_RESET);
+                    }
+                    pattern = Pattern.compile("^(X{0,3}I{0,3}|X{0,2}VI{0,3}|X{0,2}|I?[IVX])[\\+\\-\\*\\/]([0-9]|10)$", Pattern.CASE_INSENSITIVE);
+                    matcher = pattern.matcher(sInputExpression);
+                    matchFound = matcher.find();
+                    if (matchFound){
+                        // roma-arabic digit
+                        throw new Exception(ANSI_RED + "Your can only ROME-ARABIC digits in expression!" + ANSI_RESET);
+                    }
+                    throw new Exception(ANSI_RED + "UNKNOW EXPRESSION - see usege please." + ANSI_RESET);                    
+                }
+            }            
+        } catch (Exception e){
+            System.out.println(e);
+            Runtime.getRuntime().halt(-200);
         }
+        
         return iResult;
     }
 
@@ -175,8 +199,24 @@ class Main {
                         sTypeOperation = m.group(g);
                     }
                 }
-                iCalcResult = getResult(iFirst, iSecond, sTypeOperation);
-                sRomanResult = decimalToRoman(iCalcResult);
+                // check return result
+                try {
+                    iCalcResult = getResult(iFirst, iSecond, sTypeOperation);
+                    // iCalcResult > 0 only else - error exception
+                    if (iCalcResult < 1) {
+                        // @todo Exception for STRICT mode
+                        throw new Exception(ANSI_RED + "Rome digit only NATURAL (great than 0)" + ANSI_RESET);
+                        //System.exit(0);
+                    }
+                    sRomanResult = decimalToRoman(iCalcResult);
+                } catch (Exception e) {
+                    System.out.println(e);
+                    sRomanResult = "***";
+                    // fail exit
+                    Runtime.getRuntime().halt(-100);
+                }
+                
+                
                 System.out.println(ANSI_CYAN + "Result=" + ANSI_GREEN + sRomanResult + ANSI_RESET);
                 break;
             // nothing to do
